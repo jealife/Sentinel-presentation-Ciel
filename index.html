@@ -872,9 +872,9 @@ var modal=document.getElementById('logoModal');
 var heroLogos=document.getElementById('heroLogos');
 var sep1=document.getElementById('sep-1'), sep2=document.getElementById('sep-2');
 var LOGO_CFGS=[
-  {key:'sentinel_logo_school',slotId:'slot-school',prevId:'prevSchool',inputId:'inputSchool',clearId:'clearSchool',label:'+ Logo établissement (IUT&amp;SN)',alt:'Logo établissement',base:'logos/logo1'},
-  {key:'sentinel_logo_org',slotId:'slot-org',prevId:'prevOrg',inputId:'inputOrg',clearId:'clearOrg',label:'+ Logo structure (CGI)',alt:'Logo structure',base:'logos/logo2'},
-  {key:'sentinel_logo_extra',slotId:'slot-extra',prevId:'prevExtra',inputId:'inputExtra',clearId:'clearExtra',label:'+ 3e logo (Partenaire)',alt:'3e logo',base:'logos/logo3'}
+  {key:'sentinel_logo_school',slotId:'slot-school',prevId:'prevSchool',inputId:'inputSchool',clearId:'clearSchool',label:'+ Logo établissement (IUT&amp;SN)',alt:'Logo établissement',bases:['logos/logo1','logos/Logo1']},
+  {key:'sentinel_logo_org',slotId:'slot-org',prevId:'prevOrg',inputId:'inputOrg',clearId:'clearOrg',label:'+ Logo structure (CGI)',alt:'Logo structure',bases:['logos/logo2','logos/Logo2']},
+  {key:'sentinel_logo_extra',slotId:'slot-extra',prevId:'prevExtra',inputId:'inputExtra',clearId:'clearExtra',label:'+ 3e logo (Partenaire)',alt:'3e logo',bases:['logos/logo3','logos/Logo3']}
 ];
 var DEFAULT_EXTS=['.png','.svg','.webp','.jpg','.jpeg'];
 var renderGen=0;
@@ -908,15 +908,23 @@ function setSlotEmpty(cfg){
   updateLogoVisibility();
 }
 
-function probeDefaultLogo(cfg,gen,extIdx){
-  if(gen!==renderGen||extIdx>=DEFAULT_EXTS.length)return;
-  var src=cfg.base+DEFAULT_EXTS[extIdx];
+function getDefaultCandidates(cfg){
+  var list=[];
+  cfg.bases.forEach(function(b){
+    DEFAULT_EXTS.forEach(function(ext){list.push(b+ext);});
+  });
+  return list;
+}
+
+function probeDefaultLogo(cfg,gen,candidates,idx){
+  if(gen!==renderGen||idx>=candidates.length)return;
+  var src=candidates[idx];
   var img=new Image();
   img.onload=function(){
     if(gen!==renderGen)return;
     setSlotImg(cfg,src);
   };
-  img.onerror=function(){probeDefaultLogo(cfg,gen,extIdx+1);};
+  img.onerror=function(){probeDefaultLogo(cfg,gen,candidates,idx+1);};
   img.src=src;
 }
 
@@ -929,7 +937,7 @@ function renderLogos(){
       setSlotImg(cfg,val);
     }else{
       setSlotEmpty(cfg);
-      probeDefaultLogo(cfg,gen,0);
+      probeDefaultLogo(cfg,gen,getDefaultCandidates(cfg),0);
     }
   });
 }
